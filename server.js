@@ -42,6 +42,19 @@ function readUsers() {
   try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); }
   catch(e) { return []; }
 }
+function sanitizeUser(user) {
+  const { password: _, ...safeUser } = user;
+  return safeUser;
+}
+function findUserByLogin(users, identifier) {
+  const normalized = String(identifier || '').trim().toLowerCase();
+  if (!normalized) return null;
+  return users.find(user => (
+    String(user.id || '').toLowerCase() === normalized ||
+    String(user.name || '').toLowerCase() === normalized ||
+    String(user.fullName || '').toLowerCase() === normalized
+  )) || null;
+}
 
 // Sessions (in-memory, simple)
 const sessions = new Map();
@@ -67,18 +80,29 @@ function requireAuth(req, res, next) {
   const session = getSession(token);
   const users = readUsers();
   req.user = users.find(u => u.id === session.userId);
+  if (!req.user) {
+    sessions.delete(token);
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   next();
 }
 
 // AUTH ROUTES
+app.get('/api/login-users', (req, res) => {
+  const users = readUsers().map(sanitizeUser);
+  res.json(users);
+});
+
 app.post('/api/login', (req, res) => {
-  const { name, password } = req.body;
+  const { name, userId, identifier, password } = req.body;
   const users = readUsers();
-  const user = users.find(u => u.name === name && u.password === password);
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  const user = findUserByLogin(users, identifier || userId || name);
+  const normalizedPassword = String(password || '').trim();
+  if (!user || String(user.password || '') !== normalizedPassword) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
   const token = createSession(user.id);
-  const { password: _, ...safeUser } = user;
-  res.json({ token, user: safeUser });
+  res.json({ token, user: sanitizeUser(user) });
 });
 
 app.post('/api/logout', requireAuth, (req, res) => {
@@ -88,12 +112,11 @@ app.post('/api/logout', requireAuth, (req, res) => {
 });
 
 app.get('/api/me', requireAuth, (req, res) => {
-  const { password: _, ...safeUser } = req.user;
-  res.json(safeUser);
+  res.json(sanitizeUser(req.user));
 });
 
 app.get('/api/users', requireAuth, (req, res) => {
-  const users = readUsers().map(({ password: _, ...u }) => u);
+  const users = readUsers().map(sanitizeUser);
   res.json(users);
 });
 
@@ -113,7 +136,7 @@ app.post('/api/tasks', requireAuth, (req, res) => {
   };
   data.tasks.unshift(task);
   writeData(data);
-  broadcast({ type: 'TASK_ADDED', task, by: req.user.name });
+  broadcast({ type: 'TASK_ADDED', task, by: req.user.name }, { excludeToken: req.headers['x-session'] });
   res.json(task);
 });
 
@@ -123,7 +146,7 @@ app.put('/api/tasks/:id', requireAuth, (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   data.tasks[idx] = { ...data.tasks[idx], ...req.body, id: req.params.id };
   writeData(data);
-  broadcast({ type: 'TASK_UPDATED', task: data.tasks[idx], by: req.user.name });
+  broadcast({ type: 'TASK_UPDATED', task: data.tasks[idx], by: req.user.name }, { excludeToken: req.headers['x-session'] });
   res.json(data.tasks[idx]);
 });
 
@@ -133,7 +156,7 @@ app.delete('/api/tasks/:id', requireAuth, (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
   data.tasks.splice(idx, 1);
   writeData(data);
-  broadcast({ type: 'TASK_DELETED', id: req.params.id, by: req.user.name });
+  broadcast({ type: 'TASK_DELETED', id: req.params.id, by: req.user.name }, { excludeToken: req.headers['x-session'] });
   res.json({ ok: true });
 });
 
@@ -159,6 +182,7 @@ wss.on('connection', (ws, req) => {
   const session = getSession(token);
   const users = readUsers();
   const user = users.find(u => u.id === session.userId);
+  ws.sessionToken = token;
   ws.userId = session.userId;
   ws.userName = user ? user.name : 'unknown';
 
@@ -182,10 +206,12 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-function broadcast(msg, excludeWs = null) {
+function broadcast(msg, options = {}) {
   const str = JSON.stringify(msg);
+  const excludeWs = options.excludeWs || null;
+  const excludeToken = options.excludeToken || null;
   clients.forEach(ws => {
-    if (ws !== excludeWs && ws.readyState === WebSocket.OPEN) {
+    if (ws !== excludeWs && ws.sessionToken !== excludeToken && ws.readyState === WebSocket.OPEN) {
       ws.send(str);
     }
   });

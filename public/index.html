@@ -98,9 +98,10 @@ html,body{height:100%;font-family:'Syne',sans-serif;background:var(--bg);color:v
 
 /* FILTERS */
 .filters{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.filter-tab{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text3);font-family:'Syne',sans-serif;transition:all .15s}
-.filter-tab:hover{color:var(--text);border-color:var(--border2)}
-.filter-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.filter-tab,.due-filter{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text3);font-family:'Syne',sans-serif;transition:all .15s}
+.filter-tab:hover,.due-filter:hover{color:var(--text);border-color:var(--border2)}
+.filter-tab.active,.due-filter.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.filter-label{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.7px;text-transform:uppercase}
 .filter-sep{width:1px;height:20px;background:var(--border)}
 .sort-select{background:var(--bg4);border:1px solid var(--border);color:var(--text2);font-family:'Syne',sans-serif;font-size:12px;padding:5px 8px;border-radius:var(--r);outline:none;cursor:pointer}
 
@@ -145,8 +146,12 @@ html,body{height:100%;font-family:'Syne',sans-serif;background:var(--bg);color:v
 .card-btn:hover{color:var(--text)}
 
 /* QUICK ADD */
-.quick-add{background:var(--bg2);border:1px dashed var(--border);border-radius:var(--r2);padding:12px 14px;margin-top:4px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s;color:var(--text3);font-size:13px;font-family:'Syne',sans-serif;width:100%}
-.quick-add:hover{border-color:var(--accent);color:var(--accent3)}
+.quick-add-row{display:flex;gap:8px;margin-top:8px}
+.quick-add-input{flex:1;background:var(--bg2);border:1px dashed var(--border);border-radius:var(--r2);padding:11px 13px;font-size:13px;color:var(--text);font-family:'Syne',sans-serif;outline:none;transition:all .15s}
+.quick-add-input:focus{border-color:var(--accent);background:var(--bg4)}
+.quick-add-input::placeholder{color:var(--text3)}
+.quick-add-btn{width:42px;display:inline-flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);color:var(--text2);cursor:pointer;transition:all .15s}
+.quick-add-btn:hover{border-color:var(--accent);color:var(--accent3);background:#7c6aff12}
 .empty-col{text-align:center;padding:20px 10px;color:var(--text3);font-size:12px}
 
 /* MODAL */
@@ -163,7 +168,8 @@ html,body{height:100%;font-family:'Syne',sans-serif;background:var(--bg);color:v
 select.form-input{cursor:pointer}
 textarea.form-input{resize:vertical}
 .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.form-actions-spacer{margin-right:auto;display:flex;gap:10px}
 
 /* INTAKE CHECKLIST in modal */
 .intake-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-top:8px}
@@ -188,6 +194,28 @@ textarea.form-input{resize:vertical}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+@media (max-width: 960px){
+  html,body{overflow:auto}
+  #app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;height:auto;min-height:100vh}
+  .topbar{height:auto;padding:12px 14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+  .topbar-search{order:2;max-width:none;width:100%}
+  .sidebar{border-right:none;border-bottom:1px solid var(--border);padding:12px;flex-direction:row;flex-wrap:wrap;gap:8px}
+  .nav-section,.sidebar-footer{width:100%}
+  .sidebar-footer{display:flex;flex-wrap:wrap;gap:8px}
+  .main{padding:16px}
+  .page-header{flex-wrap:wrap}
+  .header-actions{margin-left:0;width:100%;flex-wrap:wrap}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .board{grid-template-columns:1fr}
+  .form-row-2{grid-template-columns:1fr}
+}
+
+@media (max-width: 560px){
+  .login-box{width:calc(100vw - 24px);padding:24px}
+  .login-users,.stats-row{grid-template-columns:1fr}
+  .task-footer{flex-wrap:wrap}
+}
 </style>
 </head>
 <body>
@@ -199,7 +227,7 @@ textarea.form-input{resize:vertical}
     <div class="login-sub">AI Agency Project Board — who are you?</div>
     <div class="login-users" id="userPicks"></div>
     <label class="login-label">Password</label>
-    <input type="password" class="login-input" id="loginPass" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="password" class="login-input" id="loginPass" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Sign In</button>
     <div class="login-error" id="loginErr">Wrong password. Try again.</div>
   </div>
@@ -265,11 +293,17 @@ textarea.form-input{resize:vertical}
     </div>
 
     <div class="filters">
-      <button class="filter-tab active" onclick="setStatusFilter('all',this)">All</button>
-      <button class="filter-tab" onclick="setStatusFilter('todo',this)">To Do</button>
-      <button class="filter-tab" onclick="setStatusFilter('inprogress',this)">In Progress</button>
-      <button class="filter-tab" onclick="setStatusFilter('review',this)">Review</button>
-      <button class="filter-tab" onclick="setStatusFilter('done',this)">Done</button>
+      <button class="filter-tab status-filter active" onclick="setStatusFilter('all',this)">All</button>
+      <button class="filter-tab status-filter" onclick="setStatusFilter('todo',this)">To Do</button>
+      <button class="filter-tab status-filter" onclick="setStatusFilter('inprogress',this)">In Progress</button>
+      <button class="filter-tab status-filter" onclick="setStatusFilter('review',this)">Review</button>
+      <button class="filter-tab status-filter" onclick="setStatusFilter('done',this)">Done</button>
+      <div class="filter-sep"></div>
+      <span class="filter-label">Due</span>
+      <button class="due-filter active" onclick="setDueFilter('all',this)">Any time</button>
+      <button class="due-filter" onclick="setDueFilter('overdue',this)">Overdue</button>
+      <button class="due-filter" onclick="setDueFilter('today',this)">Today</button>
+      <button class="due-filter" onclick="setDueFilter('week',this)">Next 7 days</button>
       <div class="filter-sep"></div>
       <select class="sort-select" id="sortSel" onchange="render()">
         <option value="created">Newest first</option>
@@ -283,17 +317,26 @@ textarea.form-input{resize:vertical}
       <div>
         <div class="col-header"><div class="col-dot" style="background:#9090a0"></div>TO DO<span class="col-count" id="cc-todo">0</span></div>
         <div class="drop-zone" id="dz-todo" ondragover="onDragOver(event,'todo')" ondrop="onDrop(event,'todo')" ondragleave="onDragLeave(event)"></div>
-        <button class="quick-add" onclick="openModalForCol('todo')"><i class="ti ti-plus" style="font-size:14px"></i> Add task</button>
+        <div class="quick-add-row">
+          <input class="quick-add-input" id="qa-todo" placeholder="Quick add to To Do" onkeydown="if(event.key==='Enter')quickAddTask('todo')">
+          <button class="quick-add-btn" onclick="quickAddTask('todo')" title="Quick add to To Do"><i class="ti ti-plus"></i></button>
+        </div>
       </div>
       <div>
         <div class="col-header"><div class="col-dot" style="background:#7c6aff"></div>IN PROGRESS<span class="col-count" id="cc-inprogress">0</span></div>
         <div class="drop-zone" id="dz-inprogress" ondragover="onDragOver(event,'inprogress')" ondrop="onDrop(event,'inprogress')" ondragleave="onDragLeave(event)"></div>
-        <button class="quick-add" onclick="openModalForCol('inprogress')"><i class="ti ti-plus" style="font-size:14px"></i> Add task</button>
+        <div class="quick-add-row">
+          <input class="quick-add-input" id="qa-inprogress" placeholder="Quick add to In Progress" onkeydown="if(event.key==='Enter')quickAddTask('inprogress')">
+          <button class="quick-add-btn" onclick="quickAddTask('inprogress')" title="Quick add to In Progress"><i class="ti ti-plus"></i></button>
+        </div>
       </div>
       <div>
         <div class="col-header"><div class="col-dot" style="background:#f5a623"></div>REVIEW<span class="col-count" id="cc-review">0</span></div>
         <div class="drop-zone" id="dz-review" ondragover="onDragOver(event,'review')" ondrop="onDrop(event,'review')" ondragleave="onDragLeave(event)"></div>
-        <button class="quick-add" onclick="openModalForCol('review')"><i class="ti ti-plus" style="font-size:14px"></i> Add task</button>
+        <div class="quick-add-row">
+          <input class="quick-add-input" id="qa-review" placeholder="Quick add to Review" onkeydown="if(event.key==='Enter')quickAddTask('review')">
+          <button class="quick-add-btn" onclick="quickAddTask('review')" title="Quick add to Review"><i class="ti ti-plus"></i></button>
+        </div>
       </div>
     </div>
     <div id="listView" style="display:none"></div>
@@ -374,8 +417,11 @@ textarea.form-input{resize:vertical}
     </div>
 
     <div class="form-actions">
-      <button class="btn" id="deleteBtn" style="display:none;color:var(--red);border-color:#ff5b5b30" onclick="deleteCurrentTask()"><i class="ti ti-trash"></i>Delete</button>
+      <div class="form-actions-spacer">
+        <button class="btn" id="deleteBtn" style="display:none;color:var(--red);border-color:#ff5b5b30" onclick="deleteCurrentTask()"><i class="ti ti-trash"></i>Delete</button>
+      </div>
       <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn" id="saveAddBtn" onclick="saveTask(true)"><i class="ti ti-plus"></i>Save & Add Another</button>
       <button class="btn btn-primary" onclick="saveTask()"><i class="ti ti-check"></i>Save Task</button>
     </div>
   </div>
@@ -393,16 +439,21 @@ let sessionToken = null;
 let ws = null;
 let editId = null;
 let statusFilter = 'all';
+let dueFilter = 'all';
 let tagFilter = null;
 let priFilter = null;
 let mineOnly = false;
 let defaultCol = 'todo';
 let currentView = 'board';
 let dragId = null;
+let wsReconnectTimer = null;
+let pingTimer = null;
 
 const TAGS = {chat:'Website Chatbot',email:'Email Automation',doc:'Doc Assistant',flow:'Custom Workflow',maint:'Maintenance'};
 const PRIS = {high:'High',med:'Medium',low:'Low'};
 const PRIORDER = {high:0,med:1,low:2};
+const LAST_USER_KEY = 'af_last_user';
+const DRAFT_KEY = 'af_task_draft';
 
 const INTAKE = {
   chat:['Primary objective defined','Core company docs uploaded','I don\'t know protocol set','Brand voice agreed','Lead capture fields defined','Chatbase / widget platform chosen'],
@@ -418,40 +469,60 @@ if(stored){ sessionToken = stored.token; currentUser = stored.user; }
 
 async function loadUsers(){
   try{
-    const r = await apiFetch('/api/users');
+    const r = await apiFetch(sessionToken ? '/api/users' : '/api/login-users');
+    if(!r.ok) throw new Error('user-load-failed');
     users = await r.json();
     buildUserPicks();
     buildAssigneeSelect();
-  }catch(e){}
+  }catch(e){
+    users = [];
+    buildUserPicks();
+    if(!sessionToken){
+      const err = document.getElementById('loginErr');
+      err.textContent = 'Could not load users. Refresh and try again.';
+      err.style.display = 'block';
+    }
+  }
 }
 
 function buildUserPicks(){
   const el = document.getElementById('userPicks');
+  if(!users.length){
+    selectedUserId = null;
+    el.innerHTML = '<div class="login-sub" style="margin-bottom:0">No users found in `data/users.json`.</div>';
+    return;
+  }
   el.innerHTML = users.map(u=>`
     <div class="user-pick" id="up-${u.id}" onclick="selectUser('${u.id}')">
       <div class="up-av" style="background:${u.color}22;color:${u.color}">${u.name}</div>
       <div class="up-name">${u.name}</div>
       <div class="up-sub">${u.fullName}</div>
     </div>`).join('');
+  const remembered = localStorage.getItem(LAST_USER_KEY);
+  const preferred = currentUser?.id || selectedUserId || remembered || users[0]?.id;
+  if(preferred && users.some(u=>u.id===preferred)) selectUser(preferred, false);
 }
 
 let selectedUserId = null;
-function selectUser(id){
+function selectUser(id, shouldFocus=true){
   selectedUserId = id;
+  localStorage.setItem(LAST_USER_KEY, id);
+  document.getElementById('loginErr').style.display='none';
   document.querySelectorAll('.user-pick').forEach(el=>el.classList.toggle('selected', el.id==='up-'+id));
-  setTimeout(()=>document.getElementById('loginPass').focus(),100);
+  if(shouldFocus) setTimeout(()=>document.getElementById('loginPass').focus(),100);
 }
 
 async function doLogin(){
   if(!selectedUserId){ toast('Pick a user first','blue'); return; }
-  const u = users.find(x=>x.id===selectedUserId);
-  const pass = document.getElementById('loginPass').value;
+  const pass = document.getElementById('loginPass').value.trim();
+  document.getElementById('loginErr').style.display='none';
   try{
-    const r = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:u.name,password:pass})});
+    const r = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:selectedUserId,password:pass})});
     const data = await r.json();
     if(!r.ok){ document.getElementById('loginErr').style.display='block'; return; }
     sessionToken = data.token;
     currentUser = data.user;
+    localStorage.setItem(LAST_USER_KEY, currentUser.id);
     sessionStorage.setItem('af_session', JSON.stringify({token:sessionToken, user:currentUser}));
     startApp();
   }catch(e){ document.getElementById('loginErr').style.display='block'; }
@@ -460,6 +531,8 @@ async function doLogin(){
 function doLogout(){
   apiFetch('/api/logout',{method:'POST'}).catch(()=>{});
   sessionStorage.removeItem('af_session');
+  clearInterval(pingTimer);
+  clearTimeout(wsReconnectTimer);
   if(ws) ws.close();
   location.reload();
 }
@@ -492,16 +565,21 @@ async function apiDeleteTask(id){
 
 // ─── WEBSOCKET ────────────────────────────────────────────────
 function connectWS(){
+  if(!sessionToken || (ws && (ws.readyState===WebSocket.OPEN || ws.readyState===WebSocket.CONNECTING))) return;
   const proto = location.protocol==='https:'?'wss':'ws';
   ws = new WebSocket(`${proto}://${location.host}/?token=${sessionToken}`);
 
   ws.onopen = ()=>{
     document.getElementById('wsStatus').className='ws-status connected';
-    setInterval(()=>{ if(ws.readyState===1) ws.send(JSON.stringify({type:'PING'})); }, 25000);
+    clearInterval(pingTimer);
+    pingTimer = setInterval(()=>{ if(ws && ws.readyState===1) ws.send(JSON.stringify({type:'PING'})); }, 25000);
   };
   ws.onclose = ()=>{
     document.getElementById('wsStatus').className='ws-status';
-    setTimeout(connectWS, 3000);
+    clearInterval(pingTimer);
+    pingTimer = null;
+    ws = null;
+    if(sessionToken) wsReconnectTimer = setTimeout(connectWS, 3000);
   };
   ws.onmessage = (e)=>{
     const msg = JSON.parse(e.data);
@@ -520,6 +598,7 @@ function handleWSMessage(msg){
 async function startApp(){
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
+  if(!users.length) await loadUsers();
   buildAssigneeSelect();
   // Set avatar
   const u = currentUser;
@@ -544,16 +623,38 @@ function getFiltered(){
   const sort = document.getElementById('sortSel')?.value || 'created';
   let t = [...tasks];
   if(statusFilter!=='all') t=t.filter(x=>x.status===statusFilter);
+  if(dueFilter!=='all') t=t.filter(matchesDueFilter);
   if(tagFilter) t=t.filter(x=>x.tag===tagFilter);
   if(priFilter) t=t.filter(x=>x.priority===priFilter);
   if(mineOnly && currentUser) t=t.filter(x=>x.assignee===currentUser.id||x.assignee==='all');
   const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
   if(q) t=t.filter(x=>(x.title+' '+(x.client||'')+' '+(x.notes||'')).toLowerCase().includes(q));
   if(sort==='priority') t.sort((a,b)=>PRIORDER[a.priority]-PRIORDER[b.priority]);
-  else if(sort==='due') t.sort((a,b)=>(a.due||'9999')>(b.due||'9999')?1:-1);
+  else if(sort==='due') t.sort((a,b)=>(a.due?new Date(a.due+'T12:00:00').getTime():Infinity)-(b.due?new Date(b.due+'T12:00:00').getTime():Infinity));
   else if(sort==='value') t.sort((a,b)=>(b.value||0)-(a.value||0));
   else t.sort((a,b)=>b.created-a.created);
   return t;
+}
+
+function getDueBucket(task){
+  if(!task.due || task.status==='done') return 'none';
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const due = new Date(task.due+'T12:00:00');
+  due.setHours(0,0,0,0);
+  const diffDays = Math.round((due - today) / 86400000);
+  if(diffDays < 0) return 'overdue';
+  if(diffDays === 0) return 'today';
+  if(diffDays <= 7) return 'week';
+  return 'later';
+}
+
+function matchesDueFilter(task){
+  const bucket = getDueBucket(task);
+  if(dueFilter==='overdue') return bucket==='overdue';
+  if(dueFilter==='today') return bucket==='today';
+  if(dueFilter==='week') return bucket==='today' || bucket==='week';
+  return true;
 }
 
 function render(){
@@ -613,6 +714,7 @@ function taskCardHTML(t){
     <div class="assignee-av" style="${avStyle}">${avText}</div>
     <div class="card-actions">
       <button class="card-btn" onclick="cycleStatus('${t.id}',event)" title="Next status"><i class="ti ti-arrow-right"></i></button>
+      <button class="card-btn" onclick="duplicateTask('${t.id}',event)" title="Duplicate"><i class="ti ti-copy"></i></button>
       <button class="card-btn" onclick="openEdit('${t.id}')" title="Edit"><i class="ti ti-edit"></i></button>
     </div>
   </div>
@@ -678,6 +780,28 @@ async function deleteCurrentTask(){
   toast('Task deleted','red');
 }
 
+async function duplicateTask(id, e){
+  e.stopPropagation();
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  const copy={
+    title:`${t.title} (Copy)`,
+    client:t.client||'',
+    tag:t.tag||'flow',
+    status:'todo',
+    priority:t.priority||'med',
+    assignee:t.assignee||(currentUser?currentUser.id:'all'),
+    value:t.value||null,
+    due:null,
+    notes:t.notes||'',
+    intake:t.intake||{},
+  };
+  const saved=await apiAddTask(copy);
+  tasks.unshift(saved);
+  render();updateBadges();
+  toast('Task duplicated','green');
+}
+
 // ─── DRAG & DROP ──────────────────────────────────────────────
 function onDragOver(e,col){ e.preventDefault(); document.getElementById('dz-'+col).classList.add('drag-over'); }
 function onDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
@@ -694,21 +818,28 @@ async function onDrop(e, col){
 }
 
 // ─── MODAL ────────────────────────────────────────────────────
-function openModal(){
+function resetTaskForm(status=defaultCol){
   editId=null;
-  document.getElementById('modalTitleText').textContent='New Task';
-  document.getElementById('deleteBtn').style.display='none';
   document.getElementById('f-title').value='';
   document.getElementById('f-client').value='';
   document.getElementById('f-tag').value='chat';
-  document.getElementById('f-status').value=defaultCol;
+  document.getElementById('f-status').value=status;
   document.getElementById('f-priority').value='med';
   document.getElementById('f-value').value='';
   document.getElementById('f-due').value='';
   document.getElementById('f-notes').value='';
   if(currentUser) document.getElementById('f-assignee').value=currentUser.id;
   updateIntakeChecklist();
+}
+
+function openModal(){
+  document.getElementById('modalTitleText').textContent='New Task';
+  document.getElementById('deleteBtn').style.display='none';
+  document.getElementById('saveAddBtn').style.display='inline-flex';
+  resetTaskForm(defaultCol);
+  const restored = restoreTaskDraft();
   document.getElementById('modalOverlay').classList.add('open');
+  if(restored) toast('Draft restored','blue');
   setTimeout(()=>document.getElementById('f-title').focus(),200);
 }
 
@@ -720,6 +851,7 @@ function openEdit(id){
   editId=id;
   document.getElementById('modalTitleText').textContent='Edit Task';
   document.getElementById('deleteBtn').style.display='flex';
+  document.getElementById('saveAddBtn').style.display='none';
   document.getElementById('f-title').value=t.title||'';
   document.getElementById('f-client').value=t.client||'';
   document.getElementById('f-tag').value=t.tag||'chat';
@@ -745,11 +877,13 @@ function updateIntakeChecklist(saved={}){
       <input type="checkbox" ${checked?'checked':''} onchange="toggleIntakeItem(${i},this)"> ${item}
     </label>`;
   }).join('');
+  persistTaskDraft();
 }
 
 function toggleIntakeItem(i, cb){
   const lbl=document.getElementById('il-'+i);
   lbl.classList.toggle('checked-item',cb.checked);
+  persistTaskDraft();
 }
 
 function getIntakeState(){
@@ -763,7 +897,7 @@ function getIntakeState(){
   return state;
 }
 
-async function saveTask(){
+async function saveTask(addAnother=false){
   const title=document.getElementById('f-title').value.trim();
   if(!title){document.getElementById('f-title').style.borderColor='var(--red)';document.getElementById('f-title').focus();return;}
   document.getElementById('f-title').style.borderColor='';
@@ -779,18 +913,31 @@ async function saveTask(){
     notes:document.getElementById('f-notes').value.trim(),
     intake:getIntakeState(),
   };
+  const editingId = editId;
   closeModal();
-  if(editId){
-    const idx=tasks.findIndex(t=>t.id===editId);
+  if(editingId){
+    const idx=tasks.findIndex(t=>t.id===editingId);
     if(idx>-1)tasks[idx]={...tasks[idx],...data};
     render();updateBadges();
-    await apiUpdateTask(editId,data);
+    await apiUpdateTask(editingId,data);
     toast('Task updated','green');
   } else {
     const saved=await apiAddTask(data);
     tasks.unshift(saved);
     render();updateBadges();
-    toast('Task added!','green');
+    clearTaskDraft();
+    toast(addAnother?'Task added. Ready for the next one.':'Task added!','green');
+    if(addAnother){
+      defaultCol=data.status;
+      openModal();
+      document.getElementById('f-tag').value=data.tag;
+      document.getElementById('f-status').value=data.status;
+      document.getElementById('f-priority').value=data.priority;
+      document.getElementById('f-assignee').value=data.assignee;
+      document.getElementById('f-value').value=data.value||'';
+      updateIntakeChecklist(data.intake||{});
+      persistTaskDraft();
+    }
   }
   editId=null;
 }
@@ -806,7 +953,14 @@ function navClick(view, el){
 
 function setStatusFilter(s,btn){
   statusFilter=s;
-  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.status-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function setDueFilter(next,btn){
+  dueFilter=next;
+  document.querySelectorAll('.due-filter').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   render();
 }
@@ -826,12 +980,95 @@ function setPriFilter(p,el){
 }
 
 function clearFilters(el){
-  statusFilter='all';tagFilter=null;priFilter=null;mineOnly=false;
+  statusFilter='all';dueFilter='all';tagFilter=null;priFilter=null;mineOnly=false;
   document.getElementById('searchInput').value='';
-  document.querySelectorAll('.filter-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.status-filter').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.due-filter').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));
   currentView='board';
   render();
+}
+
+async function quickAddTask(status){
+  const input=document.getElementById('qa-'+status);
+  const title=input.value.trim();
+  if(!title){
+    openModalForCol(status);
+    return;
+  }
+  const task={
+    title,
+    client:'',
+    tag:tagFilter||'flow',
+    status,
+    priority:priFilter||'med',
+    assignee:currentUser?currentUser.id:'all',
+    value:null,
+    due:null,
+    notes:'',
+    intake:{},
+  };
+  const saved=await apiAddTask(task);
+  tasks.unshift(saved);
+  input.value='';
+  render();updateBadges();
+  toast('Quick task added','green');
+}
+
+function readTaskDraft(){
+  try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}
+  catch(e){return null;}
+}
+
+function clearTaskDraft(){
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+function hasDraftContent(draft){
+  if(!draft) return false;
+  return Boolean(
+    draft.title || draft.client || draft.value || draft.due || draft.notes ||
+    Object.values(draft.intake||{}).some(Boolean)
+  );
+}
+
+function persistTaskDraft(){
+  if(editId) return;
+  const modal=document.getElementById('modalOverlay');
+  if(!modal || !modal.classList.contains('open')) return;
+  const draft={
+    title:document.getElementById('f-title').value,
+    client:document.getElementById('f-client').value,
+    tag:document.getElementById('f-tag').value,
+    status:document.getElementById('f-status').value,
+    priority:document.getElementById('f-priority').value,
+    assignee:document.getElementById('f-assignee').value,
+    value:document.getElementById('f-value').value,
+    due:document.getElementById('f-due').value,
+    notes:document.getElementById('f-notes').value,
+    intake:getIntakeState(),
+  };
+  if(!hasDraftContent(draft)){
+    clearTaskDraft();
+    return;
+  }
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+}
+
+function restoreTaskDraft(){
+  const draft=readTaskDraft();
+  if(!hasDraftContent(draft)) return false;
+  document.getElementById('f-title').value=draft.title||'';
+  document.getElementById('f-client').value=draft.client||'';
+  document.getElementById('f-tag').value=draft.tag||'chat';
+  document.getElementById('f-status').value=draft.status||defaultCol;
+  document.getElementById('f-priority').value=draft.priority||'med';
+  document.getElementById('f-assignee').value=draft.assignee||(currentUser?currentUser.id:'all');
+  document.getElementById('f-value').value=draft.value||'';
+  document.getElementById('f-due').value=draft.due||'';
+  document.getElementById('f-notes').value=draft.notes||'';
+  updateIntakeChecklist(draft.intake||{});
+  return true;
 }
 
 // ─── UTILS ────────────────────────────────────────────────────
@@ -866,6 +1103,12 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openModal();}
   if(e.key==='Escape')closeModal();
   if((e.metaKey||e.ctrlKey)&&e.key==='f'){e.preventDefault();document.getElementById('searchInput').focus();}
+});
+
+['f-title','f-client','f-tag','f-status','f-priority','f-assignee','f-value','f-due','f-notes'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener('input', persistTaskDraft);
+  el.addEventListener('change', persistTaskDraft);
 });
 
 // ─── BOOT ─────────────────────────────────────────────────────
