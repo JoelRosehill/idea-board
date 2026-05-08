@@ -1,0 +1,14 @@
+{
+  "name": "autoflow",
+  "version": "1.0.0",
+  "description": "AI Agency Task Manager",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.16.0"
+  }
+}
